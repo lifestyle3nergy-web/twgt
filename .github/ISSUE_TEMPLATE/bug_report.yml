@@ -1,0 +1,62 @@
+name: Bug Report
+description: Report a reproducible bug or unexpected behavior.
+title: "[Bug]: "
+labels:
+  - bug
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for helping improve this project.
+        Please provide as much detail as possible.
+
+  - type: input
+    id: summary
+    attributes:
+      label: Summary
+      description: Briefly describe the problem.
+      placeholder: A clear and concise summary.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: List the steps required to reproduce the issue.
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: Describe what you expected to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: Describe what actually happened.
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Operating system, browser, Node version, etc.
+      placeholder: Windows 11, Ubuntu 24.04, macOS, Node.js 22...
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Information
+      description: Include logs, screenshots, or any other relevant details.
