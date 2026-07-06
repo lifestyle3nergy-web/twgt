@@ -1,0 +1,16 @@
+{
+  "name": "enterprise-repository",
+  "version": "1.0.0",
+  "description": "Enterprise-grade open-source project foundation.",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "eslint": "^9.0.0",
+    "prettier": "^3.0.0"
+  }
+}
