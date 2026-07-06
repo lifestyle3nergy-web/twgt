@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+out/
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Framework output
+.next/
+.nuxt/
+.svelte-kit/
+
+# Package manager files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Generated files
+*.min.js
+*.min.css
+
+# Generated documentation
+docs/generated/
+
+# Cache directories
+.cache/
+.parcel-cache/
+
+# Test artifacts
+playwright-report/
+test-results/
+
+# Environment files
+.env
+.env.*
+
+# Local configuration
+.vscode/
+.idea/
+
+# Binary assets
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico
+*.webp
+*.pdf
