@@ -1,0 +1,10 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: Documentation
+    url: https://github.com/lifestyle3nergy-web/Swarm-Mind-Console
+    about: Review the project documentation before opening an issue.
+
+  - name: Security Reporting
+    url: https://github.com/lifestyle3nergy-web/Swarm-Mind-Console/security
+    about: Please report security vulnerabilities responsibly.
