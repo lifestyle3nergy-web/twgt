@@ -1,0 +1,10 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: TWGT Documentation
+    url: https://github.com/lifestyle3nergy-web/twgt
+    about: Review the project documentation before opening an issue.
+
+  - name: Architecture & Vision
+    url: https://github.com/lifestyle3nergy-web/twgt/blob/main/ARCHITECTURE.md
+    about: Read the architecture before requesting major platform changes.
