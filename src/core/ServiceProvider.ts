@@ -1,4 +1,5 @@
-import { Container } from "./Container";
+import { Container } from "@core/Container";
+import type { Constructor } from "@types/Constructor";
 
 export class ServiceProvider {
   constructor(private readonly container: Container) {}
@@ -6,14 +7,14 @@ export class ServiceProvider {
   /**
    * Resolve a registered service.
    */
-  public get<T>(key: string): T {
-    return this.container.resolve<T>(key);
+  public get<T>(token: Constructor<T>): T {
+    return this.container.resolve(token);
   }
 
   /**
-   * Check whether a service is registered.
+   * Check whether a service exists.
    */
-  public has(key: string): boolean {
-    return this.container.has(key);
+  public has<T>(token: Constructor<T>): boolean {
+    return this.container.has(token);
   }
 }
