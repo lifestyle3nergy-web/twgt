@@ -1,7 +1,7 @@
 type Constructor<T> = new (...args: any[]) => T;
 
 export class Container {
-  private readonly services = new Map<Constructor<any>, unknown>();
+  private readonly services = new Map<Constructor<unknown>, unknown>();
 
   public register<T>(token: Constructor<T>, instance: T): void {
     if (this.services.has(token)) {
@@ -32,4 +32,4 @@ export class Container {
   public clear(): void {
     this.services.clear();
   }
-    }
+}
