@@ -1,13 +1,29 @@
 import { Application } from "@core/Application";
+import { Container } from "@core/Container";
+import { ServiceCollection } from "@core/ServiceCollection";
+import { ServiceProvider } from "@core/ServiceProvider";
 import { Server } from "@api/server";
 
 export class Bootstrap {
+  private readonly provider: ServiceProvider;
   private readonly application: Application;
   private readonly server: Server;
 
   constructor() {
-    this.application = new Application();
-    this.server = new Server();
+    const container = new Container();
+
+    const services = new ServiceCollection(container);
+
+    services
+      .addSingleton(Application, new Application())
+      .addSingleton(Server, new Server());
+
+    this.provider = new ServiceProvider(
+      services.build()
+    );
+
+    this.application = this.provider.get(Application);
+    this.server = this.provider.get(Server);
   }
 
   public async start(): Promise<void> {
