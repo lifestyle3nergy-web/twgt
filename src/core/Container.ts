@@ -1,48 +1,35 @@
-export class Container {
-  private readonly services = new Map<string, unknown>();
+type Constructor<T> = new (...args: any[]) => T;
 
-  /**
-   * Register a singleton service.
-   */
-  public register<T>(key: string, instance: T): void {
-    if (this.services.has(key)) {
-      throw new Error(`Service "${key}" is already registered.`);
+export class Container {
+  private readonly services = new Map<Constructor<any>, unknown>();
+
+  public register<T>(token: Constructor<T>, instance: T): void {
+    if (this.services.has(token)) {
+      throw new Error(`${token.name} is already registered.`);
     }
 
-    this.services.set(key, instance);
+    this.services.set(token, instance);
   }
 
-  /**
-   * Resolve a registered service.
-   */
-  public resolve<T>(key: string): T {
-    const service = this.services.get(key);
+  public resolve<T>(token: Constructor<T>): T {
+    const service = this.services.get(token);
 
     if (!service) {
-      throw new Error(`Service "${key}" is not registered.`);
+      throw new Error(`${token.name} is not registered.`);
     }
 
     return service as T;
   }
 
-  /**
-   * Check if a service has been registered.
-   */
-  public has(key: string): boolean {
-    return this.services.has(key);
+  public has<T>(token: Constructor<T>): boolean {
+    return this.services.has(token);
   }
 
-  /**
-   * Remove a registered service.
-   */
-  public unregister(key: string): boolean {
-    return this.services.delete(key);
+  public unregister<T>(token: Constructor<T>): boolean {
+    return this.services.delete(token);
   }
 
-  /**
-   * Remove all registered services.
-   */
   public clear(): void {
     this.services.clear();
   }
-}
+    }
