@@ -1,3 +1,5 @@
+import { currentTimestamp } from "@utils/time";
+
 export enum LogLevel {
   DEBUG = "DEBUG",
   INFO = "INFO",
@@ -50,7 +52,7 @@ export class LoggerService {
     level: LogLevel,
     message: string
   ): void {
-    const timestamp = new Date().toISOString();
+    const timestamp = currentTimestamp();
 
     console.log(
       `[${timestamp}] [${level}] [${this.serviceName}] ${message}`
