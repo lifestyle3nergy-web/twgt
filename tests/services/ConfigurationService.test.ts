@@ -43,6 +43,18 @@ describe('ConfigurationService', () => {
     );
   });
 
+  it('require() treats an empty-string value as missing', () => {
+    process.env[testKey] = '';
+    const config = new ConfigurationService();
+
+    // Documents current behavior: has() sees the empty key but require()
+    // rejects it because it uses a falsy check.
+    expect(config.has(testKey)).toBe(true);
+    expect(() => config.require(testKey)).toThrowError(
+      `Required configuration "${testKey}" is missing.`,
+    );
+  });
+
   it('has() reflects key presence', () => {
     const config = new ConfigurationService();
 

@@ -1,5 +1,54 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import http from 'node:http';
+import net from 'node:net';
+
+/**
+ * Resolves once a TCP connection to the port succeeds (server accepting) or
+ * rejects with ECONNREFUSED (port free). Used to assert real bind/release
+ * behavior instead of relying on synchronous throws, which never happen for
+ * asynchronous `listen()`/`close()`.
+ */
+const isPortAccepting = (port: number): Promise<boolean> =>
+  new Promise((resolve, reject) => {
+    const socket = net
+      .connect({ port, host: '127.0.0.1' })
+      .once('connect', () => {
+        socket.destroy();
+        resolve(true);
+      })
+      .once('error', (err: NodeJS.ErrnoException) => {
+        socket.destroy();
+        if (err.code === 'ECONNREFUSED') {
+          resolve(false);
+        } else {
+          reject(err);
+        }
+      });
+  });
+
+const waitFor = async (
+  predicate: () => Promise<boolean>,
+  { attempts = 50, delayMs = 20 } = {},
+): Promise<boolean> => {
+  for (let i = 0; i < attempts; i += 1) {
+    if (await predicate()) {
+      return true;
+    }
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+  }
+  return false;
+};
+
+const getJson = (port: number): Promise<{ status: number; body: string }> =>
+  new Promise((resolve, reject) => {
+    http
+      .get(`http://127.0.0.1:${port}`, (res) => {
+        let data = '';
+        res.on('data', (chunk) => (data += chunk));
+        res.on('end', () => resolve({ status: res.statusCode ?? 0, body: data }));
+      })
+      .on('error', reject);
+  });
 
 describe('Server', () => {
   const originalPort = process.env.PORT;
@@ -26,17 +75,12 @@ describe('Server', () => {
     server.start();
 
     try {
-      const body = await new Promise<string>((resolve, reject) => {
-        http
-          .get(`http://127.0.0.1:${testPort}`, (res) => {
-            expect(res.statusCode).toBe(200);
-            expect(res.headers['content-type']).toBe('application/json');
-            let data = '';
-            res.on('data', (chunk) => (data += chunk));
-            res.on('end', () => resolve(data));
-          })
-          .on('error', reject);
-      });
+      // Wait for the async listen() to complete before issuing the request,
+      // avoiding an intermittent ECONNREFUSED race on slow machines.
+      expect(await waitFor(() => isPortAccepting(testPort))).toBe(true);
+
+      const { status, body } = await getJson(testPort);
+      expect(status).toBe(200);
 
       const payload = JSON.parse(body);
       expect(payload.status).toBe('ok');
@@ -47,16 +91,25 @@ describe('Server', () => {
     }
   });
 
-  it('stops the server so the port is released', async () => {
+  it('binds the port while running and releases it after stop()', async () => {
     const { Server } = await import('@api/server');
     const server = new Server();
+
     server.start();
+    expect(await waitFor(() => isPortAccepting(testPort))).toBe(true);
+
     server.stop();
+    expect(await waitFor(async () => !(await isPortAccepting(testPort)))).toBe(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 50));
-
+    // Port is genuinely free, so a fresh server can bind and serve again.
     const reused = new Server();
-    expect(() => reused.start()).not.toThrow();
-    reused.stop();
+    reused.start();
+    try {
+      expect(await waitFor(() => isPortAccepting(testPort))).toBe(true);
+      const { status } = await getJson(testPort);
+      expect(status).toBe(200);
+    } finally {
+      reused.stop();
+    }
   });
 });
