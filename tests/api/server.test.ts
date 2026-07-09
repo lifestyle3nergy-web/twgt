@@ -39,13 +39,25 @@ const waitFor = async (
   return false;
 };
 
-const getJson = (port: number): Promise<{ status: number; body: string }> =>
+const getJson = (
+  port: number,
+): Promise<{
+  status: number;
+  contentType: string | undefined;
+  body: string;
+}> =>
   new Promise((resolve, reject) => {
     http
       .get(`http://127.0.0.1:${port}`, (res) => {
         let data = '';
         res.on('data', (chunk) => (data += chunk));
-        res.on('end', () => resolve({ status: res.statusCode ?? 0, body: data }));
+        res.on('end', () =>
+          resolve({
+            status: res.statusCode ?? 0,
+            contentType: res.headers['content-type'],
+            body: data,
+          }),
+        );
       })
       .on('error', reject);
   });
@@ -79,8 +91,9 @@ describe('Server', () => {
       // avoiding an intermittent ECONNREFUSED race on slow machines.
       expect(await waitFor(() => isPortAccepting(testPort))).toBe(true);
 
-      const { status, body } = await getJson(testPort);
+      const { status, contentType, body } = await getJson(testPort);
       expect(status).toBe(200);
+      expect(contentType).toBe('application/json');
 
       const payload = JSON.parse(body);
       expect(payload.status).toBe('ok');
