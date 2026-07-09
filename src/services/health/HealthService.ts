@@ -1,3 +1,5 @@
+import { currentTimestamp } from "@utils/time";
+
 export interface HealthStatus {
   status: "healthy" | "unhealthy";
   timestamp: string;
@@ -8,7 +10,7 @@ export class HealthService {
   getHealth(): HealthStatus {
     return {
       status: "healthy",
-      timestamp: new Date().toISOString(),
+      timestamp: currentTimestamp(),
       uptime: process.uptime(),
     };
   }
