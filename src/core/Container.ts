@@ -1,21 +1,31 @@
 import type { Constructor } from "@types/Constructor";
-import { ServiceMap } from "@utils/ServiceMap";
+// or "../types/Constructor" if path aliases are not configured
 
 export class Container {
-  private readonly services = new ServiceMap();
+  private readonly services = new Map<Constructor<unknown>, unknown>();
 
   /**
    * Register a singleton service.
    */
   public register<T>(token: Constructor<T>, instance: T): void {
-    this.services.register(token, instance);
+    if (this.services.has(token)) {
+      throw new Error(`Service "${token.name}" is already registered.`);
+    }
+
+    this.services.set(token, instance);
   }
 
   /**
    * Resolve a registered service.
    */
   public resolve<T>(token: Constructor<T>): T {
-    return this.services.resolve(token);
+    const service = this.services.get(token);
+
+    if (!service) {
+      throw new Error(`Service "${token.name}" is not registered.`);
+    }
+
+    return service as T;
   }
 
   /**
@@ -29,7 +39,7 @@ export class Container {
    * Remove a service.
    */
   public unregister<T>(token: Constructor<T>): boolean {
-    return this.services.unregister(token);
+    return this.services.delete(token);
   }
 
   /**
