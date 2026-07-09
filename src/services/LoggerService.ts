@@ -37,10 +37,27 @@ export class LoggerService {
    * Log errors.
    */
   public error(message: string, error?: unknown): void {
+    const details = LoggerService.describeError(error);
+
     this.write(
       LogLevel.ERROR,
-      error ? `${message} ${String(error)}` : message
+      details ? `${message} ${details}` : message
     );
+  }
+
+  /**
+   * Extract human-readable detail from an error without losing the stack.
+   */
+  private static describeError(error: unknown): string | undefined {
+    if (error === undefined || error === null) {
+      return undefined;
+    }
+
+    if (error instanceof Error) {
+      return error.stack ?? `${error.name}: ${error.message}`;
+    }
+
+    return String(error);
   }
 
   /**
@@ -51,9 +68,17 @@ export class LoggerService {
     message: string
   ): void {
     const timestamp = new Date().toISOString();
+    const line = `[${timestamp}] [${level}] [${this.serviceName}] ${message}`;
 
-    console.log(
-      `[${timestamp}] [${level}] [${this.serviceName}] ${message}`
-    );
+    switch (level) {
+      case LogLevel.ERROR:
+        console.error(line);
+        break;
+      case LogLevel.WARN:
+        console.warn(line);
+        break;
+      default:
+        console.log(line);
+    }
   }
 }

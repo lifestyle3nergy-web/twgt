@@ -32,13 +32,13 @@ export class Bootstrap {
     await this.application.initialize();
     await this.application.start();
 
-    this.server.start();
+    await this.server.start();
 
     console.log("TWGT platform is running.");
   }
 
   public async stop(): Promise<void> {
-    this.server.stop();
+    await this.server.stop();
     await this.application.stop();
   }
 }
