@@ -2,12 +2,30 @@ import http from "node:http";
 import { healthRoute } from "./routes";
 import { environment } from "@config/environment";
 
-export class Server {
-  private server = http.createServer((_req, res) => {
-    res.writeHead(200, {
-      "Content-Type": "application/json",
-    });
+const HEALTH_PATHS = new Set(["/", "/health"]);
 
+export class Server {
+  private server = http.createServer((req, res) => {
+    const baseHeaders = {
+      "Content-Type": "application/json",
+      "X-Content-Type-Options": "nosniff",
+    } as const;
+
+    const path = (req.url ?? "/").split("?")[0];
+
+    if (req.method !== "GET") {
+      res.writeHead(405, { ...baseHeaders, Allow: "GET" });
+      res.end(JSON.stringify({ error: "Method Not Allowed" }));
+      return;
+    }
+
+    if (!HEALTH_PATHS.has(path)) {
+      res.writeHead(404, baseHeaders);
+      res.end(JSON.stringify({ error: "Not Found" }));
+      return;
+    }
+
+    res.writeHead(200, baseHeaders);
     res.end(JSON.stringify(healthRoute()));
   });
 
