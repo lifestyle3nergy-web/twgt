@@ -3,6 +3,13 @@ import { Container } from "@core/Container";
 import { ServiceCollection } from "@core/ServiceCollection";
 import { ServiceProvider } from "@core/ServiceProvider";
 import { Server } from "@api/server";
+import { LoggerService } from "@services/LoggerService";
+import {
+  CognitiveCycleService,
+  EchoInterpreter,
+  NoopResponder,
+  PassthroughObserver,
+} from "@services/cognitive";
 
 export class Bootstrap {
   private readonly provider: ServiceProvider;
@@ -14,9 +21,20 @@ export class Bootstrap {
 
     const services = new ServiceCollection(container);
 
+    const cognitiveLogger = new LoggerService("CognitiveCycle");
+
     services
       .addSingleton(Application, new Application())
-      .addSingleton(Server, new Server());
+      .addSingleton(Server, new Server())
+      .addSingleton(
+        CognitiveCycleService,
+        new CognitiveCycleService({
+          observer: new PassthroughObserver(),
+          interpreter: new EchoInterpreter(),
+          responder: new NoopResponder(),
+          logger: cognitiveLogger,
+        }),
+      );
 
     this.provider = new ServiceProvider(
       services.build()
