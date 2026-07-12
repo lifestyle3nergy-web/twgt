@@ -1,6 +1,6 @@
 import { prisma } from '@database';
 import { logger } from '@config';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import jwt, { type SignOptions } from 'jsonwebtoken';
 
 export interface RegisterInput {
