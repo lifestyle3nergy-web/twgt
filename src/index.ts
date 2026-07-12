@@ -31,7 +31,7 @@ async function main() {
 async function shutdown(signal: string) {
   logger.info(`${signal} received, shutting down gracefully...`);
   await app?.close();
-  redis.disconnect();
+  await redis.quit();
   await prisma.$disconnect();
   process.exit(0);
 }
