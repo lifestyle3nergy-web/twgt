@@ -1,0 +1,98 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  password  String
+  name      String
+  role      String     @default("user")
+  active    Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  knowledgeEntries KnowledgeEntry[]
+  agentExecutions  AgentExecution[]
+  telemetryMetrics TelemetryMetric[]
+
+  @@map("users")
+}
+
+model KnowledgeEntry {
+  id          String   @id @default(cuid())
+  title       String
+  content     String   @db.Text
+  summary     String?  @db.Text
+  category    String?
+  tags        String[]
+  status      String   @default("draft")
+  version     Int      @default(1)
+  embeddingId String?
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  publishedAt DateTime?
+
+  @@index([authorId])
+  @@index([category])
+  @@index([status])
+  @@map("knowledge_entries")
+}
+
+model AgentExecution {
+  id        String   @id @default(cuid())
+  agentId   String
+  runId     String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status    String   @default("running")
+  input     Json?
+  output    Json?
+  telemetry Json?
+  error     String?
+  startedAt DateTime @default(now())
+  completedAt DateTime?
+  duration  Int?
+
+  @@index([agentId])
+  @@index([userId])
+  @@index([status])
+  @@map("agent_executions")
+}
+
+model TelemetryMetric {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  metric    String
+  value     Float
+  tags      Json?
+  timestamp DateTime @default(now())
+
+  @@index([metric])
+  @@index([timestamp])
+  @@map("telemetry_metrics")
+}
+
+model WorkflowExecution {
+  id          String   @id @default(cuid())
+  workflowId  String
+  status      String   @default("running")
+  input       Json?
+  output      Json?
+  steps       Json?
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+
+  @@map("workflow_executions")
+}
