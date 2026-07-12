@@ -11,6 +11,7 @@ export async function authGuard(request: FastifyRequest, reply: FastifyReply) {
       error: 'Unauthorized',
       timestamp: new Date().toISOString(),
     });
+    return reply;
   }
 }
 

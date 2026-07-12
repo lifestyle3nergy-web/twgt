@@ -1,7 +1,7 @@
 import { prisma } from '@database';
 import { logger } from '@config';
 import bcrypt from 'bcrypt';
-import jwt from '@fastify/jwt';
+import jwt, { type SignOptions } from 'jsonwebtoken';
 
 export interface RegisterInput {
   email: string;
@@ -22,10 +22,14 @@ export interface AuthTokens {
 export class AuthService {
   private jwtSecret: string;
   private refreshSecret: string;
+  private jwtExpiry: string;
+  private refreshExpiry: string;
 
-  constructor(jwtSecret: string, refreshSecret: string) {
+  constructor(jwtSecret: string, refreshSecret: string, jwtExpiry = '1h', refreshExpiry = '7d') {
     this.jwtSecret = jwtSecret;
     this.refreshSecret = refreshSecret;
+    this.jwtExpiry = jwtExpiry;
+    this.refreshExpiry = refreshExpiry;
   }
 
   async register(input: RegisterInput): Promise<{ user: any; tokens: AuthTokens }> {
@@ -102,11 +106,15 @@ export class AuthService {
     }
   }
 
-  async validateToken(token: string): Promise<{ userId: string; email: string; role: string } | null> {
+  async validateToken(
+    token: string,
+  ): Promise<{ userId: string; email: string; role: string } | null> {
     try {
-      // Note: In a real app, you'd verify the token with the secret
-      // This is a simplified example
-      const decoded = jwt.verify(token) as any;
+      const decoded = jwt.verify(token, this.jwtSecret) as {
+        userId: string;
+        email: string;
+        role: string;
+      };
       return decoded;
     } catch (error) {
       logger.debug({ error }, 'Token validation failed');
@@ -117,9 +125,12 @@ export class AuthService {
   private generateTokens(userId: string, email: string, role: string): AuthTokens {
     const payload = { userId, email, role };
 
-    // These would be signed with the actual secrets in production
-    const accessToken = `token_${Date.now()}_${Math.random().toString(36).substr(2)}`;
-    const refreshToken = `refresh_${Date.now()}_${Math.random().toString(36).substr(2)}`;
+    const accessToken = jwt.sign(payload, this.jwtSecret, {
+      expiresIn: this.jwtExpiry,
+    } as SignOptions);
+    const refreshToken = jwt.sign(payload, this.refreshSecret, {
+      expiresIn: this.refreshExpiry,
+    } as SignOptions);
 
     return { accessToken, refreshToken };
   }

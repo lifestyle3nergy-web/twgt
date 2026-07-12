@@ -1,6 +1,9 @@
-import { bootstrap } from '@core/bootstrap';
+import type { FastifyInstance } from 'fastify';
+import { bootstrap } from '@core/app.bootstrap';
 import { env, logger } from '@config';
-import { prisma } from '@database';
+import { prisma, redis } from '@database';
+
+let app: FastifyInstance | undefined;
 
 async function main() {
   try {
@@ -12,10 +15,11 @@ async function main() {
     logger.info('✅ Database connected');
 
     // Bootstrap the application
-    const app = await bootstrap();
+    const server = await bootstrap();
+    app = server;
 
     // Start the server
-    await app.listen({ port: env.PORT, host: env.HOST });
+    await server.listen({ port: env.PORT, host: env.HOST });
     logger.info(`✅ Server listening at http://${env.HOST}:${env.PORT}`);
   } catch (error) {
     logger.error({ error }, '❌ Application startup failed');
@@ -24,17 +28,16 @@ async function main() {
 }
 
 // Graceful shutdown
-process.on('SIGTERM', async () => {
-  logger.info('SIGTERM received, shutting down gracefully...');
+async function shutdown(signal: string) {
+  logger.info(`${signal} received, shutting down gracefully...`);
+  await app?.close();
+  redis.disconnect();
   await prisma.$disconnect();
   process.exit(0);
-});
+}
 
-process.on('SIGINT', async () => {
-  logger.info('SIGINT received, shutting down gracefully...');
-  await prisma.$disconnect();
-  process.exit(0);
-});
+process.on('SIGTERM', () => void shutdown('SIGTERM'));
+process.on('SIGINT', () => void shutdown('SIGINT'));
 
 main().catch((error) => {
   console.error('Fatal error:', error);

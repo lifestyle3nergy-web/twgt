@@ -1,5 +1,5 @@
 import { Container } from "@core/Container";
-import type { Constructor } from "@types/Constructor";
+import type { Constructor } from "@/types/Constructor";
 
 export class ServiceCollection {
   constructor(private readonly container: Container) {}

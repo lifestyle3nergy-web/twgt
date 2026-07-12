@@ -30,7 +30,7 @@ export class AuthHandler {
       logger.error({ error }, 'Registration error');
       reply.status(400).send({
         success: false,
-        error: error instanceof Error ? error.message : 'Registration failed',
+        error: error instanceof z.ZodError ? 'Invalid registration input' : 'Registration failed',
         timestamp: new Date().toISOString(),
       });
     }
