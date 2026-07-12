@@ -11,22 +11,56 @@ export class Server {
       "X-Content-Type-Options": "nosniff",
     } as const;
 
-    const path = (req.url ?? "/").split("?")[0];
+    try {
+      const path = (req.url ?? "/").split("?")[0];
 
-    if (req.method !== "GET") {
-      res.writeHead(405, { ...baseHeaders, Allow: "GET" });
-      res.end(JSON.stringify({ error: "Method Not Allowed" }));
-      return;
+      if (req.method !== "GET") {
+        res.writeHead(405, {
+          ...baseHeaders,
+          Allow: "GET",
+        });
+
+        res.end(
+          JSON.stringify({
+            error: "Method Not Allowed",
+          })
+        );
+        return;
+      }
+
+      if (!HEALTH_PATHS.has(path)) {
+        res.writeHead(404, baseHeaders);
+
+        res.end(
+          JSON.stringify({
+            error: "Not Found",
+          })
+        );
+        return;
+      }
+
+      const body = JSON.stringify(healthRoute());
+
+      res.writeHead(200, {
+        ...baseHeaders,
+        "Content-Length": Buffer.byteLength(body),
+      });
+
+      res.end(body);
+    } catch (error) {
+      console.error("Failed to handle request:", error);
+
+      const body = JSON.stringify({
+        error: "Internal Server Error",
+      });
+
+      res.writeHead(500, {
+        ...baseHeaders,
+        "Content-Length": Buffer.byteLength(body),
+      });
+
+      res.end(body);
     }
-
-    if (!HEALTH_PATHS.has(path)) {
-      res.writeHead(404, baseHeaders);
-      res.end(JSON.stringify({ error: "Not Found" }));
-      return;
-    }
-
-    res.writeHead(200, baseHeaders);
-    res.end(JSON.stringify(healthRoute()));
   });
 
   public start(): void {
