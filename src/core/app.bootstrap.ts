@@ -6,7 +6,7 @@ import { registerRoutes } from '@api/routes/index';
 
 export async function bootstrap() {
   const app = Fastify({
-    logger: logger as unknown as FastifyBaseLogger,
+    loggerInstance: logger as unknown as FastifyBaseLogger,
   });
 
   // Register plugins
