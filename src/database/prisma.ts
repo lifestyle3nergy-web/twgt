@@ -1,10 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { logger } from '@config';
 
-const globalForPrisma = global as unknown as { prisma: PrismaClient };
-
-export const prisma =
-  globalForPrisma.prisma ||
+const createPrismaClient = () =>
   new PrismaClient({
     log: [
       { emit: 'event', level: 'query' },
@@ -12,6 +9,12 @@ export const prisma =
       { emit: 'event', level: 'warn' },
     ],
   });
+
+const globalForPrisma = global as unknown as {
+  prisma: ReturnType<typeof createPrismaClient> | undefined;
+};
+
+export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 

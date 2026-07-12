@@ -1,4 +1,4 @@
-import type { Constructor } from "@types/Constructor";
+import type { Constructor } from "@/types/Constructor";
 import { ServiceMap } from "@utils/ServiceMap";
 
 export class Container {

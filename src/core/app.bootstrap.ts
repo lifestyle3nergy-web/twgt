@@ -1,12 +1,12 @@
-import Fastify from 'fastify';
+import Fastify, { type FastifyBaseLogger } from 'fastify';
 import fastifyJwt from '@fastify/jwt';
 import fastifyCors from '@fastify/cors';
 import { env, logger } from '@config';
-import { registerRoutes } from '@api/routes';
+import { registerRoutes } from '@api/routes/index';
 
 export async function bootstrap() {
   const app = Fastify({
-    logger: logger,
+    loggerInstance: logger as unknown as FastifyBaseLogger,
   });
 
   // Register plugins
@@ -14,9 +14,10 @@ export async function bootstrap() {
     secret: env.JWT_SECRET,
   });
 
+  const wildcardOrigin = env.CORS_ORIGIN === '*';
   await app.register(fastifyCors, {
-    origin: env.CORS_ORIGIN === '*' ? true : env.CORS_ORIGIN.split(','),
-    credentials: env.CORS_CREDENTIALS,
+    origin: wildcardOrigin ? '*' : env.CORS_ORIGIN.split(','),
+    credentials: wildcardOrigin ? false : env.CORS_CREDENTIALS,
   });
 
   // Register routes

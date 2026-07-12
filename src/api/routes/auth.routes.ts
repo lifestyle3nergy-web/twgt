@@ -5,7 +5,12 @@ import { authGuard } from '@auth/auth.guard';
 import { env } from '@config';
 
 export async function authRoutes(app: FastifyInstance) {
-  const authService = new AuthService(env.JWT_SECRET, env.REFRESH_SECRET);
+  const authService = new AuthService(
+    env.JWT_SECRET,
+    env.REFRESH_SECRET,
+    env.JWT_EXPIRY,
+    env.REFRESH_EXPIRY,
+  );
   const handler = new AuthHandler(authService);
 
   app.post('/auth/register', (req, reply) => handler.register(req, reply));
