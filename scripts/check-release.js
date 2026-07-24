@@ -17,6 +17,7 @@ function checkChangelog() {
 
   const content = fs.readFileSync(changelog, "utf8");
 
+  // Require a version entry like: ## v1.2.3
   if (!content.match(/^##\s*v?\d+\.\d+\.\d+/m)) {
     fail("CHANGELOG.md missing a version entry (e.g. ## v1.2.3).");
   }
@@ -67,3 +68,4 @@ function main() {
 }
 
 main();
+
